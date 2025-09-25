@@ -1,0 +1,24 @@
+generator client { provider = "prisma-client-js" }
+datasource db { provider = "postgresql"; url = env("DATABASE_URL") }
+
+model Document {
+  id        String   @id @default(cuid())
+  title     String
+  source    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  chunks    Chunk[]
+}
+
+model Chunk {
+  id         String   @id @default(cuid())
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  documentId String
+  idx        Int
+  content    String
+  embedding  Vector   @db.Vector(1536) // si usas text-embedding-3-small (1536). Cambia a 3072 si usas 3-large
+  createdAt  DateTime @default(now())
+
+  @@index([documentId, idx])
+  @@index([embedding], type: Vector)
+}
